@@ -875,10 +875,30 @@
 <p><strong>yield[ from]</strong></p>
 <h2 id="descriptor">descriptor</h2>
 <p><strong>intention</strong></p>
-<p><strong><code>__get__</code></strong></p>
-<p><strong><code>__set__</code></strong></p>
-<p><strong><code>__del__</code></strong></p>
-<p><strong><code>__set_name__</code></strong></p>
+<p>gulf between classes and types:</p>
+<ul>
+<li>cannot directly subclass the dictionary type</li>
+<li>introspection interface for finding out methods and instance variables an object has is different for types and classes</li>
+<li>classes use <code>__dict__</code>, <code>__class__</code> and <code>__bases__</code> to search an attribute of an object</li>
+<li>types use <code>__members__</code> and <code>__methods__</code> to list method names and data attribute names supported, but have never been carefully defined, like Fulton&apos;s ExtensionClasses ignore the type API, and instead emulate the class API, which is more powerful.</li>
+</ul>
+<p>so we are to make types look more like classes, or the opposite option: make classes look more like types. Due to classes introspection API is more powerful, like we can extract SocketType&apos;s docstrings without creating a socket, we hereby provide PEP0252 and bring descriptor.</p>
+<p><strong><code>__get__</code> &amp;&amp; <code>__set__</code></strong></p>
+<p><code>__get__</code> and <code>__set__</code> are designed to well define attribute searching precedence rule, cause we are mixing type <code>__methods__</code> / <code>__members__</code> into classes <code>__dict__</code>, but we can&apos;t have a simple rule like &apos;static overrides dynamic&apos; or &apos;dynamic overrides static&apos;, because sometimes static indeed overrides dynamic, such as <code>&apos;__class__&apos;</code> in an instance&apos;s <code>__dict__</code> is ignored if favor of the statically defined <code>__class__</code>, and most keys in instance&apos;s <code>__dict__</code> override instance&apos;s <code>__class__.__dict__</code>.</p>
+<p>here&apos;s the rule:</p>
+<ul>
+<li>static attribute with <code>__get__</code> as well as <code>__set__</code> override dynamic, call it data descriptor</li>
+<li>static attribute with <code>__get__</code> without <code>__set__</code> not override dynamic, call it non-data descriptor</li>
+<li><code>__get__(self, instance, owner)</code></li>
+<li><code>__set__(self, instance, value)</code></li>
+</ul>
+<p>Here we can implement bound method, unbound method, staticmethod, and classmethod easily. Cool!</p>
+<p><strong>mro</strong></p>
+<p>since now all classes are inherited from <code>object</code>, diamond inheritance emerges as a problem. So we use MRO!</p>
+<ul>
+<li>DSF</li>
+<li>remove all occurences except for the last</li>
+</ul>
 <h2 id="metaclass">metaclass</h2>
 <p><strong>intention</strong></p>
 <p><strong><code>__prepare__</code></strong></p>
@@ -929,7 +949,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Language Reference","level":"1.2.2","depth":2,"next":{"title":"PEPs","level":"1.2.3","depth":2,"path":"python/peps.md","ref":"python/peps.md","articles":[]},"previous":{"title":"Libraries","level":"1.2.1","depth":2,"path":"python/libraries.md","ref":"python/libraries.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["livereload"],"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"python/language.md","mtime":"2018-06-11T02:42:45.000Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-10T08:47:02.159Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Language Reference","level":"1.2.2","depth":2,"next":{"title":"PEPs","level":"1.2.3","depth":2,"path":"python/peps.md","ref":"python/peps.md","articles":[]},"previous":{"title":"Libraries","level":"1.2.1","depth":2,"path":"python/libraries.md","ref":"python/libraries.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["livereload"],"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"python/language.md","mtime":"2018-06-11T16:52:46.000Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-06-10T08:47:02.159Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

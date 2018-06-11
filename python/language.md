@@ -71,13 +71,34 @@ Python is an interpreted, interactive, object-oriented programming language, pro
 
 **intention**
 
-**`__get__`**
+gulf between classes and types:
 
-**`__set__`**
+* cannot directly subclass the dictionary type
+* introspection interface for finding out methods and instance variables an object has is different for types and classes
+* classes use `__dict__`, `__class__` and `__bases__` to search an attribute of an object
+* types use `__members__` and `__methods__` to list method names and data attribute names supported, but have never been carefully defined, like Fulton's ExtensionClasses ignore the type API, and instead emulate the class API, which is more powerful.
 
-**`__del__`**
+so we are to make types look more like classes, or the opposite option: make classes look more like types. Due to classes introspection API is more powerful, like we can extract SocketType's docstrings without creating a socket, we hereby provide PEP0252 and bring descriptor.
 
-**`__set_name__`**
+**`__get__` && `__set__`**
+
+`__get__` and `__set__` are designed to well define attribute searching precedence rule, cause we are mixing type `__methods__` / `__members__` into classes `__dict__`, but we can't have a simple rule like 'static overrides dynamic' or 'dynamic overrides static', because sometimes static indeed overrides dynamic, such as `'__class__'` in an instance's `__dict__` is ignored if favor of the statically defined `__class__`, and most keys in instance's `__dict__` override instance's `__class__.__dict__`.
+
+here's the rule:
+
+* static attribute with `__get__` as well as `__set__` override dynamic, call it data descriptor
+* static attribute with `__get__` without `__set__` not override dynamic, call it non-data descriptor
+* `__get__(self, instance, owner)`
+* `__set__(self, instance, value)`
+
+Here we can implement bound method, unbound method, staticmethod, and classmethod easily. Cool!
+
+**mro**
+
+since now all classes are inherited from `object`, diamond inheritance emerges as a problem. So we use MRO!
+
+* DSF
+* remove all occurences except for the last
 
 ## metaclass
 
